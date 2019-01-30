@@ -216,10 +216,9 @@ socket.on('newMessage', function (message) {
       startGame();
     })
   }else{
-    
+    jQuery('#messages').append(html);
   }
 
-  jQuery('#messages').append(html);
   scrollToBottom();
 });
 
@@ -271,5 +270,5 @@ locationButton.on('click', function () {
 
 
 function startGame(){
-   erase() 
+    erase(); 
 }

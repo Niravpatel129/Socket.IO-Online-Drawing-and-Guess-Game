@@ -14,7 +14,7 @@ var app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 var users = new Users();
-
+var newgame = false;
 app.use(express.static(publicPath));
 
 io.on('connection', (socket) => {
@@ -45,13 +45,22 @@ io.on('connection', (socket) => {
     if (user && isRealString(message.text)) {
       io.to(user.room).emit('newMessage', generateMessage(user.name, message.text, color));
     }
-
-    callback();
+    if(callback){
+      callback();
+    }
   });
   socket.on('draw', function (input) {
     var user = users.getUser(socket.id);
 
     io.to(user.room).emit('draw', input);
+  })
+
+  socket.on('startgame', function (input) {
+    newgame = true;
+    var user = users.getUser(socket.id);
+    io.to(user.room).emit('newMessage', generateMessage('Server:', `Drawer is: Ashish is Black`));
+
+    io.to(user.room).emit('startgame', input);
   })
 
   socket.on('whodraws', function () {
@@ -70,9 +79,9 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     var user = users.removeUser(socket.id);
 
-    if (user) {
+    if (newgame) {
       io.to(user.room).emit('updateUserList', users.getUserList(user.room));
-      // io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left.`));
+      //  io.to(user.room).emit('newMessage', generateMessage('Server:', `${user.name} has left.`));
     }
   });
 
