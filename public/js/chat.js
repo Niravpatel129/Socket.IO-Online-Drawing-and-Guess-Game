@@ -12,12 +12,7 @@ var canvas, ctx, flag = false,
 var x = "black",
   y = 2;
 
-  //receive drawing from server
-  socket.on('draw', function (data) {
-    ctx.moveTo(data.prevX, data.prevY);
-    ctx.lineTo(data.currX, data.currY);
-    ctx.stroke()
-})
+
 
 
 //DRAWING Function Below
@@ -92,15 +87,7 @@ function color(obj) {
 
 }
 
-function draw() {
-  ctx.beginPath();
-  ctx.moveTo(prevX, prevY);
-  ctx.lineTo(currX, currY);
-  ctx.strokeStyle = x;
-  ctx.lineWidth = y;
-  ctx.stroke();
-  ctx.closePath();
-}
+
 
 function erase() {
   var m = confirm("Want to clear");
@@ -145,9 +132,29 @@ function findxy(res, e) {
       currY = e.clientY - canvas.offsetTop;
       draw();
     }
-    // send draw data
+
+    function draw() {
+      ctx.beginPath();
+      ctx.moveTo(prevX, prevY);
+      ctx.lineTo(currX, currY);
+      ctx.strokeStyle = x;
+      ctx.lineWidth = y;
+      ctx.stroke();
+      ctx.closePath();
+       // send draw data
     socket.emit('draw', { currX, currY, prevX, prevY });
 
+    }
+    //receive drawing from server
+    socket.on('draw', function (data) {
+      ctx.beginPath();
+      ctx.moveTo(data.prevX, data.prevY);
+      ctx.lineTo(data.currX, data.currY);
+      ctx.stroke()
+      ctx.closePath();
+    })
+
+   
   }
 }
 
