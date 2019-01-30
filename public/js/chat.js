@@ -7,6 +7,10 @@ var COLORS = [
   '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
 ];
 
+//Check if erase was called
+socket.on('eraseall', ()=>{
+  erase();
+});
 
 
 // Drawing
@@ -276,7 +280,4 @@ function startGame(){
 
 function eraseall(){
   socket.emit('eraseall');
-  socket.on('eraseall', ()=>{
-    erase();
-  });
 }
