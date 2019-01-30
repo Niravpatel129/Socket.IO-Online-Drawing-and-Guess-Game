@@ -17,6 +17,13 @@ var users = new Users();
 var newgame = false;
 app.use(express.static(publicPath));
 
+var countdown = 120;
+
+
+
+
+
+
 io.on('connection', (socket) => {
   connections.push(socket.id);
 
@@ -30,7 +37,7 @@ io.on('connection', (socket) => {
     users.addUser(socket.id, params.name, params.room);
 
     io.to(params.room).emit('updateUserList', users.getUserList(params.room));
-    // socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
+    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
     callback();
   });
 
@@ -67,6 +74,16 @@ io.on('connection', (socket) => {
     var user = users.getUser(socket.id);
     io.to(user.room).emit('eraseall');
   })
+
+  // timer
+  setInterval(function() {
+    countdown--;
+    //test
+    if(countdown <= 0){
+      countdown = 120;
+    }
+    io.sockets.emit('timer', { countdown: countdown });
+}, 1200);
 
 
   socket.on('whodraws', function () {

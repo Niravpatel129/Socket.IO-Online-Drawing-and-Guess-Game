@@ -7,6 +7,7 @@ var COLORS = [
   '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
 ];
 
+
 //Check if erase was called
 socket.on('eraseall', ()=>{
   erase();
@@ -236,6 +237,20 @@ socket.on('newLocationMessage', function (message) {
   jQuery('#messages').append(html);
   scrollToBottom();
 });
+
+
+//timer
+socket.on('timer', function(data){
+  var template2 = jQuery('#timer-template').html();
+  var html2 = Mustache.render(template2, {
+    timekeep: data.countdown});
+  
+    var timerkeeper = jQuery('#timekeeper');
+    console.log(html2)
+    
+  $('#timer').html(html2); 
+
+  })
 
 jQuery('#message-form').on('submit', function (e) {
   e.preventDefault();
