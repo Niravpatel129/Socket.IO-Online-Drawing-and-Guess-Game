@@ -7,7 +7,7 @@ console.log("SERVER STARTED!!");
 const {generateMessage, generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
 const {Users} = require('./utils/users');
-
+var counter = 0;
 const publicPath = path.join(__dirname, './public');
 const port = process.env.PORT || 3000;
 var app = express();
@@ -31,15 +31,19 @@ io.on('connection', (socket) => {
     users.addUser(socket.id, params.name, params.room);
 
     io.to(params.room).emit('updateUserList', users.getUserList(params.room));
-    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
+    // socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
     callback();
   });
 
   socket.on('createMessage', (message, callback) => {
+    // find index of a certain user
+    
     var user = users.getUser(socket.id);
-
+    var userlist = [] 
+    userlist = (users.getUserList(user.room));
+    var color = userlist.indexOf(user.name);
     if (user && isRealString(message.text)) {
-      io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+      io.to(user.room).emit('newMessage', generateMessage(user.name, message.text, color));
     }
 
     callback();
@@ -68,7 +72,7 @@ io.on('connection', (socket) => {
 
     if (user) {
       io.to(user.room).emit('updateUserList', users.getUserList(user.room));
-      io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left.`));
+      // io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left.`));
     }
   });
 

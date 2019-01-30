@@ -1,6 +1,15 @@
 var socket = io();
+
+//COLORS
+var COLORS = [
+  '#e21400', '#91580f', '#f8a700', '#f78b00',
+  '#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
+  '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
+];
+
+
+
 // Drawing
-// var canvas, ctx, flag = false,
     //receive drawing from server
     socket.on('draw', function (data) {
       ctx.beginPath();
@@ -38,18 +47,6 @@ function init() {
   ctx = canvas.getContext("2d");
   w = canvas.width;
   h = canvas.height;
-
-  //Decide who draws
-  socket.emit('whodraws');
-  socket.on('whodraws', function (data) {
-
-    if (data[0] == socket.id) {
-      console.log('You are allowed to draw stuff')
-      letsDraw();
-    } else {
-      console.log('You will not be drawing today sir');
-    }
-  })
 
   canvas.addEventListener("mousemove", function (e) {
     findxy('move', e)
@@ -97,7 +94,7 @@ function color(obj) {
 
 
 function erase() {
-  var m = confirm("Want to clear");
+  var m = true;
   if (m) {
     ctx.clearRect(0, 0, w, h);
     document.getElementById("canvasimg").style.display = "none";
@@ -201,13 +198,26 @@ socket.on('updateUserList', function (users) {
 });
 
 socket.on('newMessage', function (message) {
+
+  
+  // console.log(message)
   var formattedTime = moment(message.createdAt).format('h:mm a');
   var template = jQuery('#message-template').html();
   var html = Mustache.render(template, {
     text: message.text,
     from: message.from,
-    createdAt: formattedTime
+    createdAt: formattedTime,
+    color: COLORS[message.color]
   });
+  console.log(message.text)
+  if(message.text == '/new'){
+    socket.emit('startgame');
+    socket.on('startgame', function(){
+      startGame();
+    })
+  }else{
+    
+  }
 
   jQuery('#messages').append(html);
   scrollToBottom();
@@ -222,13 +232,14 @@ socket.on('newLocationMessage', function (message) {
     createdAt: formattedTime
   });
 
+
   jQuery('#messages').append(html);
   scrollToBottom();
 });
 
 jQuery('#message-form').on('submit', function (e) {
   e.preventDefault();
-
+  
   var messageTextbox = jQuery('[name=message]');
 
   socket.emit('createMessage', {
@@ -257,3 +268,8 @@ locationButton.on('click', function () {
     alert('Unable to fetch location.');
   });
 });
+
+
+function startGame(){
+   erase() 
+}
