@@ -204,7 +204,6 @@ socket.on('updateUserList', function (users) {
 socket.on('newMessage', function (message) {
 
   
-  console.log(message)
   var formattedTime = moment(message.createdAt).format('h:mm a');
   var template = jQuery('#message-template').html();
   var html = Mustache.render(template, {
@@ -216,13 +215,10 @@ socket.on('newMessage', function (message) {
   });
   console.log(message.text)
   if(message.text == '/new'){
-    socket.emit('startgame');
-    socket.on('startgame', function(){
-      startGame();
-    })
+    socket.emit('startgame2');
   }else{
     jQuery('#messages').append(html);
-  }
+   }
 
   scrollToBottom();
 });
@@ -274,9 +270,6 @@ locationButton.on('click', function () {
 });
 
 
-function startGame(){
-    erase(); 
-}
 
 function eraseall(){
   socket.emit('eraseall');

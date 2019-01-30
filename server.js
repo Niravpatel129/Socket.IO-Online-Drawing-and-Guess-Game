@@ -18,7 +18,6 @@ var newgame = false;
 app.use(express.static(publicPath));
 
 io.on('connection', (socket) => {
-  console.log('New user connected');
   connections.push(socket.id);
 
   socket.on('join', (params, callback) => {
@@ -55,11 +54,12 @@ io.on('connection', (socket) => {
     io.to(user.room).emit('draw', input);
   })
 
-  socket.on('startgame', function (input) {
+  socket.on('startgame2', function () {
     newgame = true;
     var user = users.getUser(socket.id);
-    io.to(user.room).emit('newMessage', generateMessage('[Server]:', `Drawer is: "Ashish is Black"`, 8, 'lightyellow'));
-    io.to(user.room).emit('startgame', input);
+    console.log(user)
+    io.to(user.room).emit('newMessage', generateMessage('[Server]:', `Drawer is: ` + user.name, 8, 'lightyellow'));
+    io.to(user.room).emit('startgame2');
   })
 
   // socket erase for everyone
