@@ -11,7 +11,7 @@ var moment = require('moment');
 // console.log(date.format('MMM Do, YYYY'));
 
 // 10:35 am
-// 6:01 am
+// 6:01 amm
 
 var someTimestamp = moment().valueOf();
 console.log(someTimestamp)
