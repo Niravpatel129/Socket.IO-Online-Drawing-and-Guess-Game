@@ -14,11 +14,9 @@ var x = "black",
 
   //receive drawing from server
   socket.on('draw', function (data) {
-    ctx.beginPath();
     ctx.moveTo(data.prevX, data.prevY);
     ctx.lineTo(data.currX, data.currY);
     ctx.stroke()
-    ctx.closePath();
 })
 
 
