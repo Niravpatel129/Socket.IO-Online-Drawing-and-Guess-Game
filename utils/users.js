@@ -37,6 +37,13 @@ class Users {
 
     return namesArray;
   }
+
+  getUserSocketList (room) {
+    var users = this.users.filter((user) => user.room === room);
+    var socketsArray = users.map((user) => user.id);
+
+    return socketsArray;
+  }
 }
 
 module.exports = {Users};

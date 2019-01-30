@@ -19,3 +19,8 @@ canvas{
     position: fixed;
     margin-left: 55px;
 }
+
+button{
+    background-color: cadetblue;
+    opacity: 110;
+}

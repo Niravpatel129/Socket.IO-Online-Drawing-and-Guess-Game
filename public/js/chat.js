@@ -7,11 +7,24 @@ var COLORS = [
   '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
 ];
 
+//list of users currently playing in the lobby
+var users;
 
 //Check if erase was called
-socket.on('eraseall', ()=>{
-  erase();
+
+//Check to see if start game was called
+socket.on('startgame2', function(userlist){
+  startgame();
+  
 });
+
+//Start Game Function
+function startgame(){
+  console.log('startgame function called');
+  socket.emit('eraseall');
+
+}
+
 
 
 // Drawing
@@ -47,12 +60,20 @@ var canvas, ctx, flag = false,
 var x = "black",
   y = 2;
 
+
+  
 function init() {
   canvas = document.getElementById('can');
   ctx = canvas.getContext("2d");
   w = canvas.width;
   h = canvas.height;
 
+  socket.on('whodraws', function (data) {
+
+      console.log('The Gods have blessed you with drawing permissions');
+      letsDraw();
+  })
+  function letsDraw(){
   canvas.addEventListener("mousemove", function (e) {
     findxy('move', e)
   }, false);
@@ -157,6 +178,12 @@ function findxy(res, e) {
   }
 }
 
+socket.on('eraseall', ()=>{
+  erase();
+});
+
+}
+
 
 //CHAT
 function scrollToBottom() {
@@ -183,7 +210,6 @@ socket.on('connect', function () {
       alert(err);
       window.location.href = '/';
     } else {
-      console.log('No error');
     }
   });
 });
@@ -214,8 +240,8 @@ socket.on('newMessage', function (message) {
     color: COLORS[message.color],
     backgroundcolor: message.backgroundcolor
   });
-  console.log(message.text)
   if(message.text == '/new'){
+    console.log('Called')
     socket.emit('startgame2');
   }else{
     jQuery('#messages').append(html);
@@ -246,7 +272,6 @@ socket.on('timer', function(data){
     timekeep: data.countdown});
   
     var timerkeeper = jQuery('#timekeeper');
-    console.log(html2)
     
   $('#timer').html(html2); 
 
@@ -289,3 +314,5 @@ locationButton.on('click', function () {
 function eraseall(){
   socket.emit('eraseall');
 }
+
+

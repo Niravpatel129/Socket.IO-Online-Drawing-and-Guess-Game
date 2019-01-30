@@ -4,9 +4,9 @@ const express = require('express');
 const socketIO = require('socket.io');
 var connections = [] //list of clients
 console.log("SERVER STARTED!!");
-const {generateMessage, generateLocationMessage} = require('./utils/message');
-const {isRealString} = require('./utils/validation');
-const {Users} = require('./utils/users');
+const { generateMessage, generateLocationMessage } = require('./utils/message');
+const { isRealString } = require('./utils/validation');
+const { Users } = require('./utils/users');
 var counter = 0;
 const publicPath = path.join(__dirname, './public');
 const port = process.env.PORT || 3000;
@@ -16,8 +16,10 @@ var io = socketIO(server);
 var users = new Users();
 var newgame = false;
 app.use(express.static(publicPath));
+var countdown = 0;
+var drawer = 0;
+var usercount;
 
-var countdown = 120;
 
 
 
@@ -45,28 +47,31 @@ io.on('connection', (socket) => {
     // find index of a certain user
     
     var user = users.getUser(socket.id);
-    var userlist = [] 
+    var userlist = []
     userlist = (users.getUserList(user.room));
     var color = userlist.indexOf(user.name);
     if (user && isRealString(message.text)) {
       io.to(user.room).emit('newMessage', generateMessage(user.name, message.text, color));
     }
-    if(callback){
+    if (callback) {
       callback();
     }
   });
   socket.on('draw', function (input) {
     var user = users.getUser(socket.id);
-
     io.to(user.room).emit('draw', input);
   })
 
-  socket.on('startgame2', function () {
-    newgame = true;
-    var user = users.getUser(socket.id);
-    console.log(user)
-    io.to(user.room).emit('newMessage', generateMessage('[Server]:', `Drawer is: ` + user.name, 8, 'lightyellow'));
-    io.to(user.room).emit('startgame2');
+    // Start Game Functions
+    socket.on('startgame2', function () {
+    
+      var user = users.getUser(socket.id);
+      var userlist = users.getUserSocketList(user.room);
+      var userlistnames = users.getUserList(user.room);
+      var players = (user.name.length);
+    countdown = 121;
+    io.to(userlist[drawer]).emit('whodraws');
+    io.to(user.room).emit('newMessage', generateMessage('[Server]:', `Drawer is: ` + userlistnames[drawer], 8, 'lightyellow'));
   })
 
   // socket erase for everyone
@@ -76,14 +81,12 @@ io.on('connection', (socket) => {
   })
 
   // timer
-  setInterval(function() {
+  setInterval(function () {
     countdown--;
-    //test
-    if(countdown <= 0){
-      countdown = 120;
+    if(countdown > 0){
+      io.sockets.emit('timer', { countdown: countdown });
     }
-    io.sockets.emit('timer', { countdown: countdown });
-}, 1200);
+  }, 1200);
 
 
   socket.on('whodraws', function () {
@@ -95,7 +98,7 @@ io.on('connection', (socket) => {
     var user = users.getUser(socket.id);
 
     if (user) {
-      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));  
+      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
     }
   });
 
@@ -112,6 +115,11 @@ io.on('connection', (socket) => {
 
 
 
+
+
+
 server.listen(port, () => {
   console.log(`Server is up on ${port}`);
 });
+
+
