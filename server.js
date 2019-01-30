@@ -58,10 +58,18 @@ io.on('connection', (socket) => {
   socket.on('startgame', function (input) {
     newgame = true;
     var user = users.getUser(socket.id);
-    io.to(user.room).emit('newMessage', generateMessage('Server:', `Drawer is: Ashish is Black`));
+    io.to(user.room).emit('newMessage', generateMessage('[Server]:', `Drawer is: "Ashish is Black"`, 8, 'lightyellow'));
 
     io.to(user.room).emit('startgame', input);
   })
+
+  // socket erase for everyone
+  socket.on('eraseall', function (input) {
+    newgame = true;
+    var user = users.getUser(socket.id);
+    io.to(user.room).emit('eraseall', input);
+  })
+
 
   socket.on('whodraws', function () {
     var user = users.getUser(socket.id);
