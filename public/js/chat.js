@@ -1,7 +1,14 @@
 var socket = io();
 // Drawing
 // var canvas, ctx, flag = false,
-
+    //receive drawing from server
+    socket.on('draw', function (data) {
+      ctx.beginPath();
+      ctx.moveTo(data.prevX, data.prevY);
+      ctx.lineTo(data.currX, data.currY);
+      ctx.stroke()
+      ctx.closePath();
+    })
 var canvas, ctx, flag = false,
   prevX = 0,
   currX = 0,
@@ -141,20 +148,10 @@ function findxy(res, e) {
       ctx.lineWidth = y;
       ctx.stroke();
       ctx.closePath();
-       // send draw data
-    socket.emit('draw', { currX, currY, prevX, prevY });
+      // send draw data
+      socket.emit('draw', { currX, currY, prevX, prevY });
 
-    }
-    //receive drawing from server
-    socket.on('draw', function (data) {
-      ctx.beginPath();
-      ctx.moveTo(data.prevX, data.prevY);
-      ctx.lineTo(data.currX, data.currY);
-      ctx.stroke()
-      ctx.closePath();
-    })
-
-   
+    }   
   }
 }
 
