@@ -240,14 +240,10 @@ function init() {
           ctx.stroke();
           ctx.closePath();
           // send draw data
-            socket.emit('draw', { currX, currY, prevX, prevY });
-
-          
-
+            socket.emit('draw', { currX, currY, prevX, prevY });    
         }
       }
     }
-
     socket.on('eraseall', () => {
       erase();
     });
@@ -255,7 +251,6 @@ function init() {
   }
 
 }
-
 
 //CHAT
 function scrollToBottom() {
