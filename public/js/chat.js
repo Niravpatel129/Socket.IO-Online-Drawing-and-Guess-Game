@@ -1,5 +1,6 @@
 var socket = io();
 var drawPerm = false;
+var gussedCorrect = false;
 //COLORS
 var COLORS = [
   '#e21400', '#91580f', '#f8a700', '#f78b00',
@@ -12,16 +13,10 @@ var users;
 
 //Check if erase was called
 
-//Check to see if start game was called
-socket.on('startgame2', function (userlist) {
-  startgame();
-
-});
 // Check if drawword is given
 socket.on('drawWord', function (drawWord) {
-  socket.emit('cleanword', drawWord);
-  $('.word').html("Your Word is: ");
-  $('.word2').html("Your Word: " + drawWord);
+  // socket.emit('cleanword', drawWord);
+  $('.word2').html(drawWord);
 
 });
 
@@ -29,12 +24,12 @@ socket.on('drawWord', function (drawWord) {
 socket.on('cleanword', function (word) {
   console.log(word);
   guess = "";
-  for(var i = 0; i < word; i++){
+  for (var i = 0; i < word.length; i++) {
     guess += '_ '
   }
- 
-    $('.word2').html(guess);
-  
+
+  $('.word2').html(guess);
+
 })
 
 socket.on('clearchat', function () {
@@ -107,153 +102,153 @@ function init() {
 
 }
 
-  socket.on('takeawaydraw', function (data) {
-    socket.emit('eraseall');
-    console.log('You dont get to draw');
-    $('canvas').css('opacity', '0.9')
-    drawPerm = false;
-    $("input").removeAttr('disabled');
-    $("input").attr('placeholder', 'Message');
-    $("input").css('background-color', '');
-  })
+socket.on('takeawaydraw', function (data) {
+  socket.emit('eraseall');
+  console.log('You dont get to draw');
+  $('canvas').css('opacity', '0.9')
+  drawPerm = false;
+  $("input").removeAttr('disabled');
+  $("input").attr('placeholder', 'Message');
+  $("input").css('background-color', '');
+})
 
-  socket.on('whodraws', function (data) {
-    console.log('The Gods have blessed you with drawing permissions');
-    $('canvas').css('opacity', '1')
-    drawPerm = true;
-    allowDraw();
-  })
-  function allowDraw() {
-      canvas.addEventListener("mousemove", function (e) {
-        findxy('move', e)
-      }, false);
-      canvas.addEventListener("mousedown", function (e) {
-        findxy('down', e)
-      }, false);
-      canvas.addEventListener("mouseup", function (e) {
-        findxy('up', e)
-      }, false);
-      canvas.addEventListener("mouseout", function (e) {
-        findxy('out', e)
-      }, false);
-    }
-  
+socket.on('whodraws', function (data) {
+  console.log('The Gods have blessed you with drawing permissions');
+  $('canvas').css('opacity', '1')
+  drawPerm = true;
+  allowDraw();
+})
+function allowDraw() {
+  canvas.addEventListener("mousemove", function (e) {
+    findxy('move', e)
+  }, false);
+  canvas.addEventListener("mousedown", function (e) {
+    findxy('down', e)
+  }, false);
+  canvas.addEventListener("mouseup", function (e) {
+    findxy('up', e)
+  }, false);
+  canvas.addEventListener("mouseout", function (e) {
+    findxy('out', e)
+  }, false);
+}
 
 
-  function color(obj) {
-    switch (obj.id) {
-      case "green":
-        x = "green";
-        break;
-      case "blue":
-        x = "blue";
-        break;
-      case "red":
-        x = "red";
-        break;
-      case "yellow":
-        x = "yellow";
-        break;
-      case "orange":
-        x = "orange";
-        break;
-      case "black":
-        x = "black";
-        break;
-      case "white":
-        x = "white";
-        break;
-    }
-    if (x == "white") y = 14;
-    else y = 2;
 
+function color(obj) {
+  switch (obj.id) {
+    case "green":
+      x = "green";
+      break;
+    case "blue":
+      x = "blue";
+      break;
+    case "red":
+      x = "red";
+      break;
+    case "yellow":
+      x = "yellow";
+      break;
+    case "orange":
+      x = "orange";
+      break;
+    case "black":
+      x = "black";
+      break;
+    case "white":
+      x = "white";
+      break;
   }
+  if (x == "white") y = 14;
+  else y = 2;
+
+}
 
 
 
-  function erase() {
-    var m = true;
-    if (m) {
-      ctx.clearRect(0, 0, w, h);
-      document.getElementById("canvasimg").style.display = "none";
+function erase() {
+  var m = true;
+  if (m) {
+    ctx.clearRect(0, 0, w, h);
+    document.getElementById("canvasimg").style.display = "none";
+  }
+}
+
+function save() {
+  document.getElementById("canvasimg").style.border = "2px solid";
+  var dataURL = canvas.toDataURL();
+  document.getElementById("canvasimg").src = dataURL;
+  document.getElementById("canvasimg").style.display = "inline";
+}
+
+function findxy(res, e) {
+  if (drawPerm == true) {
+    if (res == 'down') {
+      prevX = currX;
+      prevY = currY;
+      currX = e.clientX - canvas.offsetLeft;
+      currY = e.clientY - canvas.offsetTop;
+
+      flag = true;
+      dot_flag = true;
+      if (dot_flag) {
+        ctx.beginPath();
+        ctx.fillStyle = x;
+        ctx.fillRect(currX, currY, 2, 2);
+        ctx.closePath();
+        dot_flag = false;
+      }
     }
-  }
 
-  function save() {
-    document.getElementById("canvasimg").style.border = "2px solid";
-    var dataURL = canvas.toDataURL();
-    document.getElementById("canvasimg").src = dataURL;
-    document.getElementById("canvasimg").style.display = "inline";
-  }
 
-  function findxy(res, e) {
-    if (drawPerm == true) {
-      if (res == 'down') {
+    if (res == 'up' || res == "out") {
+      flag = false;
+    }
+    if (res == 'move') {
+      if (flag) {
         prevX = currX;
         prevY = currY;
         currX = e.clientX - canvas.offsetLeft;
         currY = e.clientY - canvas.offsetTop;
-
-        flag = true;
-        dot_flag = true;
-        if (dot_flag) {
-          ctx.beginPath();
-          ctx.fillStyle = x;
-          ctx.fillRect(currX, currY, 2, 2);
-          ctx.closePath();
-          dot_flag = false;
-        }
+        draw();
       }
 
 
-      if (res == 'up' || res == "out") {
-        flag = false;
+      function removeDraw() {
+        console.log('removeDraw');
+
+        canvas.addEventListener("mousemove", function (e) {
+          findxy('', e)
+        }, false);
+        canvas.addEventListener("mousedown", function (e) {
+          findxy('', e)
+
+        }, false);
+        canvas.addEventListener("mouseup", function (e) {
+          findxy('', e)
+
+        }, false);
+        canvas.addEventListener("mouseout", function (e) {
+          findxy('', e)
+
+        }, false);
       }
-      if (res == 'move') {
-        if (flag) {
-          prevX = currX;
-          prevY = currY;
-          currX = e.clientX - canvas.offsetLeft;
-          currY = e.clientY - canvas.offsetTop;
-          draw();
-        }
 
 
-        function removeDraw() {
-          console.log('removeDraw');
-
-          canvas.addEventListener("mousemove", function (e) {
-            findxy('', e)
-          }, false);
-          canvas.addEventListener("mousedown", function (e) {
-            findxy('', e)
-
-          }, false);
-          canvas.addEventListener("mouseup", function (e) {
-            findxy('', e)
-
-          }, false);
-          canvas.addEventListener("mouseout", function (e) {
-            findxy('', e)
-
-          }, false);
-        }
-
-
-        function draw() {
-          ctx.beginPath();
-          ctx.moveTo(prevX, prevY);
-          ctx.lineTo(currX, currY);
-          ctx.strokeStyle = x;
-          ctx.lineWidth = y;
-          ctx.stroke();
-          ctx.closePath();
-          // send draw data
-            socket.emit('draw', { currX, currY, prevX, prevY });    
-        }
+      function draw() {
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.stroke();
+        ctx.closePath();
+        // send draw data
+        socket.emit('draw', { currX, currY, prevX, prevY });
       }
     }
-    
+  }
+
 
 }
 
@@ -381,9 +376,9 @@ locationButton.on('click', function () {
 
 
 function eraseall() {
-  if(drawPerm){
+  if (drawPerm) {
     socket.emit('eraseall');
-  }else{
+  } else {
     console.log('Cant erase when you arnt drawing fool')
   }
 }
