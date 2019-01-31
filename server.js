@@ -79,7 +79,7 @@ io.on('connection', (socket) => {
       for (var i = 0; i < playerCount; i++) {
         listofPlayers[i] = { 'name': userlistnames[i], 'socket': userlist[i], 'points': 0 }
       }
-      countdown = 60;
+      countdown = 30;
       gameloop = true;
         io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'NEW GAME INITALIZED, STARTING IN 5..', 7, 'lightyellow'));
         sleep.sleep(1); // sleep for 1 seconds
@@ -121,7 +121,7 @@ socket.on('cleanword', function(){
   setInterval(function () {
     var user = users.getUser(socket.id);
 
-          io.sockets.emit('timer', { countdown: countdown });
+    io.sockets.emit('timer', { countdown: countdown });
     if(gameloop){
         if(listofPlayers[drawer] != null){
           io.to(listofPlayers[drawer].socket).emit('whodraws')
@@ -131,25 +131,21 @@ socket.on('cleanword', function(){
     }
     if (countdown <= 0 && gameloop) {
       sleep.sleep(1);
-      // TODO Clear Canvas of previous drawing
       var user = users.getUser(socket.id);
-      io.to(user.room).emit('eraseall');
-      // TODO Clear Draw Permissions
-      // TODO Clear Chat Permissions
-      io.to(user.room).emit('clearchat');
-      socket.to('clearWord').emit('GOOD LUCK');
+      io.in(user.room).emit('eraseall');
+      io.in(user.room).emit('takeawaydraw');
+      io.in(user.room).emit('clearchat');
+      socket.in('clearWord').emit('GOOD LUCK');
       io.sockets.emit('timer', { countdown: 0 });
-      var user = users.getUser(socket.id);
       io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Begin New Round', 5, 'lightyellow'));
       drawer++;
       if(listofPlayers[drawer] != null){
-        var user = users.getUser(socket.id);
         io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Drawer is now: ' + listofPlayers[drawer].name, 7, 'lightyellow'));
         countdown = 60;
       }else{
         gameloop = false;
-        var user = users.getUser(socket.id);
         io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Game Ended everyones drawed', 5, 'lightyellow'));
+        io.to(user.room).emit('drawWord', '')
 
         // Game should end here
       }

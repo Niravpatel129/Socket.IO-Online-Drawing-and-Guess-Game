@@ -1,5 +1,5 @@
 var socket = io();
-
+var drawPerm = false;
 //COLORS
 var COLORS = [
   '#e21400', '#91580f', '#f8a700', '#f78b00',
@@ -27,19 +27,24 @@ socket.on('drawWord', function (drawWord) {
 
 // Clear Data for players not drawing
 socket.on('cleanword', function (word) {
-  console.log(word);
   var guess = "";
-  for(var i = 0; i < word; i++){
+  for (var i = 0; i < word; i++) {
     guess += '_ '
   }
-  $('.word2').html(guess);
+
+  if (word == '') {
+    $('.word2').html("Game Ended");
+
+  } else {
+    $('.word2').html(guess);
+  }
 })
 
-socket.on('clearchat', function(){
+socket.on('clearchat', function () {
   $("input").removeAttr('disabled');
   $("input").attr('placeholder', 'Message');
   $("input").css('background-color', '');
-  })
+})
 
 
 
@@ -51,8 +56,8 @@ function startgame() {
 }
 
 //Correct Word socket
-socket.on('correctword', function(){
-  $("input").attr('disabled','disabled');
+socket.on('correctword', function () {
+  $("input").attr('disabled', 'disabled');
   $("input").attr('placeholder', 'Correct Word Guessed!');
   $("input").css('background-color', 'lightgreen');
 })
@@ -65,6 +70,8 @@ socket.on('draw', function (data) {
   ctx.lineTo(data.currX, data.currY);
   ctx.stroke()
   ctx.closePath();
+
+
 })
 var canvas, ctx, flag = false,
   prevX = 0,
@@ -75,9 +82,6 @@ var canvas, ctx, flag = false,
 
 var x = "black",
   y = 2;
-
-
-
 
 //DRAWING Function Below
 var canvas, ctx, flag = false,
@@ -98,26 +102,34 @@ function init() {
   w = canvas.width;
   h = canvas.height;
 
-  socket.on('whodraws', function (data) {
+  socket.on('takeawaydraw', function (data) {
+    console.log('You dont get to draw');
+    $('canvas').css('opacity', '0.9')
+    drawPerm = false;
+  })
 
+  socket.on('whodraws', function (data) {
     console.log('The Gods have blessed you with drawing permissions');
     $('canvas').css('opacity', '1')
-    letsDraw();
+    drawPerm = true;
+    allowDraw();
   })
-  function letsDraw() {
-    canvas.addEventListener("mousemove", function (e) {
-      findxy('move', e)
-    }, false);
-    canvas.addEventListener("mousedown", function (e) {
-      findxy('down', e)
-    }, false);
-    canvas.addEventListener("mouseup", function (e) {
-      findxy('up', e)
-    }, false);
-    canvas.addEventListener("mouseout", function (e) {
-      findxy('out', e)
-    }, false);
-  }
+  function allowDraw() {
+      canvas.addEventListener("mousemove", function (e) {
+        findxy('move', e)
+      }, false);
+      canvas.addEventListener("mousedown", function (e) {
+        findxy('down', e)
+      }, false);
+      canvas.addEventListener("mouseup", function (e) {
+        findxy('up', e)
+      }, false);
+      canvas.addEventListener("mouseout", function (e) {
+        findxy('out', e)
+      }, false);
+    }
+  
+
 
   function color(obj) {
     switch (obj.id) {
@@ -166,52 +178,81 @@ function init() {
   }
 
   function findxy(res, e) {
-    if (res == 'down') {
-      prevX = currX;
-      prevY = currY;
-      currX = e.clientX - canvas.offsetLeft;
-      currY = e.clientY - canvas.offsetTop;
-
-      flag = true;
-      dot_flag = true;
-      if (dot_flag) {
-        ctx.beginPath();
-        ctx.fillStyle = x;
-        ctx.fillRect(currX, currY, 2, 2);
-        ctx.closePath();
-        dot_flag = false;
-      }
-    }
-    if (res == 'up' || res == "out") {
-      flag = false;
-    }
-    if (res == 'move') {
-      if (flag) {
+    if (drawPerm == true) {
+      if (res == 'down') {
         prevX = currX;
         prevY = currY;
         currX = e.clientX - canvas.offsetLeft;
         currY = e.clientY - canvas.offsetTop;
-        draw();
+
+        flag = true;
+        dot_flag = true;
+        if (dot_flag) {
+          ctx.beginPath();
+          ctx.fillStyle = x;
+          ctx.fillRect(currX, currY, 2, 2);
+          ctx.closePath();
+          dot_flag = false;
+        }
       }
 
-      function draw() {
-        ctx.beginPath();
-        ctx.moveTo(prevX, prevY);
-        ctx.lineTo(currX, currY);
-        ctx.strokeStyle = x;
-        ctx.lineWidth = y;
-        ctx.stroke();
-        ctx.closePath();
-        // send draw data
-        socket.emit('draw', { currX, currY, prevX, prevY });
 
+      if (res == 'up' || res == "out") {
+        flag = false;
+      }
+      if (res == 'move') {
+        if (flag) {
+          prevX = currX;
+          prevY = currY;
+          currX = e.clientX - canvas.offsetLeft;
+          currY = e.clientY - canvas.offsetTop;
+          draw();
+        }
+
+
+        function removeDraw() {
+          console.log('removeDraw');
+
+          canvas.addEventListener("mousemove", function (e) {
+            findxy('', e)
+          }, false);
+          canvas.addEventListener("mousedown", function (e) {
+            findxy('', e)
+
+          }, false);
+          canvas.addEventListener("mouseup", function (e) {
+            findxy('', e)
+
+          }, false);
+          canvas.addEventListener("mouseout", function (e) {
+            findxy('', e)
+
+          }, false);
+        }
+
+
+        function draw() {
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY);
+          ctx.lineTo(currX, currY);
+          ctx.strokeStyle = x;
+          ctx.lineWidth = y;
+          ctx.stroke();
+          ctx.closePath();
+          // send draw data
+            socket.emit('draw', { currX, currY, prevX, prevY });
+
+          
+
+        }
       }
     }
-  }
 
-  socket.on('eraseall', () => {
-    erase();
-  });
+    socket.on('eraseall', () => {
+      erase();
+    });
+
+  }
 
 }
 
