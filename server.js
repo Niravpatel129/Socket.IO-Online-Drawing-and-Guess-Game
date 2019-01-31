@@ -8,7 +8,6 @@ console.log("SERVER STARTED!!");
 const { generateMessage, generateLocationMessage } = require('./utils/message');
 const { isRealString } = require('./utils/validation');
 const { Users } = require('./utils/users');
-var counter = 0;
 const publicPath = path.join(__dirname, './public');
 const port = process.env.PORT || 3000;
 var app = express();
@@ -18,7 +17,7 @@ var users = new Users();
 app.use(express.static(publicPath));
 var countdown = 0;
 var drawer = 0;
-var drawWord = 'Cat';
+var drawWord = 'Puppy';
 var gameloop;
 var listofPlayers = [];
 
@@ -54,26 +53,25 @@ io.on('connection', (socket) => {
     userlist = (users.getUserList(user.room));
     var color = userlist.indexOf(user.name);
     //Check if draw word is typed
-    if (message.text == drawWord){
+    if (message.text.toUpperCase() == drawWord.toUpperCase()){
       //Add points to user message.name
       //emit back to client to lock from typing any messages
+      io.to(user.id).emit('correctword');
       //Send global message that this person got the word correct
-      io.to(user.room).emit('newMessage', generateMessage('[SERVER] ' + user.name + ' Guessed Correctly!', 7, 'lightyellow'));
-      //io.to(user.room).emit('newMessage', generateMessage(user.name, message.text, color));
+      io.to(user.room).emit('newMessage', generateMessage('[SERVER]', user.name + ' Guessed Correctly!', 3, 'lightyellow'));
 
 
     }
     //check if the new command is called
-    if (message.text == '/new') {
+    else if (message.text == '/new') {
+      io.to(user.room).emit('eraseall');
       var drawer = 0;
-      countdown = 0;
       var user = users.getUser(socket.id);
       var userlist = []
       userlist = (users.getUserList(user.room));
       var color = userlist.indexOf(user.name);
       // Set the game into a Safe Empty State
       var round = 0;
-      var user = users.getUser(socket.id);
       var userlist = users.getUserSocketList(user.room);
       var userlistnames = users.getUserList(user.room);
       var playerCount = (userlist.length);
@@ -81,18 +79,13 @@ io.on('connection', (socket) => {
       for (var i = 0; i < playerCount; i++) {
         listofPlayers[i] = { 'name': userlistnames[i], 'socket': userlist[i], 'points': 0 }
       }
-      countdown = 121;
-
+      countdown = 60;
       gameloop = true;
         io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'NEW GAME INITALIZED, STARTING IN 5..', 7, 'lightyellow'));
         sleep.sleep(1); // sleep for 1 seconds
-        io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Begin!', 7, 'lightyellow'));
+        io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Drawer is now: ' + listofPlayers[drawer].name, 7, 'lightyellow'));
 
-    } else if (message.text == '/start' || message.text == '/s'){
-        gameloop = true;
-        io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'NEW GAME INITALIZED, STARTING IN 5..', 4, 'lightyellow'));
-        sleep.sleep(1); // sleep for 1 seconds
-      }
+    } 
     else if (user && isRealString(message.text)) {
       io.to(user.room).emit('newMessage', generateMessage(user.name, message.text, color));
     }
@@ -120,22 +113,47 @@ io.on('connection', (socket) => {
 // listener
 socket.on('cleanword', function(){
   var user = users.getUser(socket.id);
-  socket.to(user.room).emit('cleanword', 3);
+  socket.to(user.room).emit('cleanword', drawWord.length);
 
 })
 
   // timer and game loop
   setInterval(function () {
+    var user = users.getUser(socket.id);
+
+          io.sockets.emit('timer', { countdown: countdown });
     if(gameloop){
-      var user = users.getUser(socket.id);
-        io.to(listofPlayers[drawer].socket).emit('whodraws')
-        io.to(listofPlayers[drawer].socket).emit('drawWord', drawWord)
-        countdown--;
+        if(listofPlayers[drawer] != null){
+          io.to(listofPlayers[drawer].socket).emit('whodraws')
+          io.to(listofPlayers[drawer].socket).emit('drawWord', drawWord)
+          countdown--;
+        }
     }
-    if (countdown > 0) {
-      io.sockets.emit('timer', { countdown: countdown });
-    }else{
-      gameloop = false;
+    if (countdown <= 0 && gameloop) {
+      sleep.sleep(1);
+      // TODO Clear Canvas of previous drawing
+      var user = users.getUser(socket.id);
+      io.to(user.room).emit('eraseall');
+      // TODO Clear Draw Permissions
+      // TODO Clear Chat Permissions
+      io.to(user.room).emit('clearchat');
+      socket.to('clearWord').emit('GOOD LUCK');
+      io.sockets.emit('timer', { countdown: 0 });
+      var user = users.getUser(socket.id);
+      io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Begin New Round', 5, 'lightyellow'));
+      drawer++;
+      if(listofPlayers[drawer] != null){
+        var user = users.getUser(socket.id);
+        io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Drawer is now: ' + listofPlayers[drawer].name, 7, 'lightyellow'));
+        countdown = 60;
+      }else{
+        gameloop = false;
+        var user = users.getUser(socket.id);
+        io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Game Ended everyones drawed', 5, 'lightyellow'));
+
+        // Game should end here
+      }
+
 
     }
   }, 1200);

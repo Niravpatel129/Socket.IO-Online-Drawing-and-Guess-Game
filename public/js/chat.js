@@ -27,12 +27,20 @@ socket.on('drawWord', function (drawWord) {
 
 // Clear Data for players not drawing
 socket.on('cleanword', function (word) {
+  console.log(word);
   var guess = "";
   for(var i = 0; i < word; i++){
     guess += '_ '
   }
   $('.word2').html(guess);
 })
+
+socket.on('clearchat', function(){
+  $("input").removeAttr('disabled');
+  $("input").attr('placeholder', 'Message');
+  $("input").css('background-color', '');
+  })
+
 
 
 //Start Game Function
@@ -42,7 +50,12 @@ function startgame() {
 
 }
 
-
+//Correct Word socket
+socket.on('correctword', function(){
+  $("input").attr('disabled','disabled');
+  $("input").attr('placeholder', 'Correct Word Guessed!');
+  $("input").css('background-color', 'lightgreen');
+})
 
 // Drawing
 //receive drawing from server
@@ -88,6 +101,7 @@ function init() {
   socket.on('whodraws', function (data) {
 
     console.log('The Gods have blessed you with drawing permissions');
+    $('canvas').css('opacity', '1')
     letsDraw();
   })
   function letsDraw() {

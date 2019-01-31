@@ -13,7 +13,7 @@ body{
 }
 
 canvas{
-    opacity: 0.8;
+    opacity: 0.9;
     background-color: white;
     margin: 20px 0;
     position: fixed;
