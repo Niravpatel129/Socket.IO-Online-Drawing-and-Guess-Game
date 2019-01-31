@@ -13,13 +13,30 @@ var users;
 //Check if erase was called
 
 //Check to see if start game was called
-socket.on('startgame2', function(userlist){
+socket.on('startgame2', function (userlist) {
   startgame();
-  
+
+});
+// Check if drawword is given
+socket.on('drawWord', function (drawWord) {
+  socket.emit('cleanword')
+  $('.word').html("Your Word is: ");
+  $('.word2').html("Your Word: " + drawWord);
+
 });
 
+// Clear Data for players not drawing
+socket.on('cleanword', function (word) {
+  var guess = "";
+  for(var i = 0; i < word; i++){
+    guess += '_ '
+  }
+  $('.word2').html(guess);
+})
+
+
 //Start Game Function
-function startgame(){
+function startgame() {
   console.log('startgame function called');
   socket.emit('eraseall');
 
@@ -28,14 +45,14 @@ function startgame(){
 
 
 // Drawing
-    //receive drawing from server
-    socket.on('draw', function (data) {
-      ctx.beginPath();
-      ctx.moveTo(data.prevX, data.prevY);
-      ctx.lineTo(data.currX, data.currY);
-      ctx.stroke()
-      ctx.closePath();
-    })
+//receive drawing from server
+socket.on('draw', function (data) {
+  ctx.beginPath();
+  ctx.moveTo(data.prevX, data.prevY);
+  ctx.lineTo(data.currX, data.currY);
+  ctx.stroke()
+  ctx.closePath();
+})
 var canvas, ctx, flag = false,
   prevX = 0,
   currX = 0,
@@ -61,7 +78,7 @@ var x = "black",
   y = 2;
 
 
-  
+
 function init() {
   canvas = document.getElementById('can');
   ctx = canvas.getContext("2d");
@@ -70,117 +87,117 @@ function init() {
 
   socket.on('whodraws', function (data) {
 
-      console.log('The Gods have blessed you with drawing permissions');
-      letsDraw();
+    console.log('The Gods have blessed you with drawing permissions');
+    letsDraw();
   })
-  function letsDraw(){
-  canvas.addEventListener("mousemove", function (e) {
-    findxy('move', e)
-  }, false);
-  canvas.addEventListener("mousedown", function (e) {
-    findxy('down', e)
-  }, false);
-  canvas.addEventListener("mouseup", function (e) {
-    findxy('up', e)
-  }, false);
-  canvas.addEventListener("mouseout", function (e) {
-    findxy('out', e)
-  }, false);
-}
-
-function color(obj) {
-  switch (obj.id) {
-    case "green":
-      x = "green";
-      break;
-    case "blue":
-      x = "blue";
-      break;
-    case "red":
-      x = "red";
-      break;
-    case "yellow":
-      x = "yellow";
-      break;
-    case "orange":
-      x = "orange";
-      break;
-    case "black":
-      x = "black";
-      break;
-    case "white":
-      x = "white";
-      break;
+  function letsDraw() {
+    canvas.addEventListener("mousemove", function (e) {
+      findxy('move', e)
+    }, false);
+    canvas.addEventListener("mousedown", function (e) {
+      findxy('down', e)
+    }, false);
+    canvas.addEventListener("mouseup", function (e) {
+      findxy('up', e)
+    }, false);
+    canvas.addEventListener("mouseout", function (e) {
+      findxy('out', e)
+    }, false);
   }
-  if (x == "white") y = 14;
-  else y = 2;
 
-}
+  function color(obj) {
+    switch (obj.id) {
+      case "green":
+        x = "green";
+        break;
+      case "blue":
+        x = "blue";
+        break;
+      case "red":
+        x = "red";
+        break;
+      case "yellow":
+        x = "yellow";
+        break;
+      case "orange":
+        x = "orange";
+        break;
+      case "black":
+        x = "black";
+        break;
+      case "white":
+        x = "white";
+        break;
+    }
+    if (x == "white") y = 14;
+    else y = 2;
 
-
-
-function erase() {
-  var m = true;
-  if (m) {
-    ctx.clearRect(0, 0, w, h);
-    document.getElementById("canvasimg").style.display = "none";
   }
-}
 
-function save() {
-  document.getElementById("canvasimg").style.border = "2px solid";
-  var dataURL = canvas.toDataURL();
-  document.getElementById("canvasimg").src = dataURL;
-  document.getElementById("canvasimg").style.display = "inline";
-}
 
-function findxy(res, e) {
-  if (res == 'down') {
-    prevX = currX;
-    prevY = currY;
-    currX = e.clientX - canvas.offsetLeft;
-    currY = e.clientY - canvas.offsetTop;
 
-    flag = true;
-    dot_flag = true;
-    if (dot_flag) {
-      ctx.beginPath();
-      ctx.fillStyle = x;
-      ctx.fillRect(currX, currY, 2, 2);
-      ctx.closePath();
-      dot_flag = false;
+  function erase() {
+    var m = true;
+    if (m) {
+      ctx.clearRect(0, 0, w, h);
+      document.getElementById("canvasimg").style.display = "none";
     }
   }
-  if (res == 'up' || res == "out") {
-    flag = false;
+
+  function save() {
+    document.getElementById("canvasimg").style.border = "2px solid";
+    var dataURL = canvas.toDataURL();
+    document.getElementById("canvasimg").src = dataURL;
+    document.getElementById("canvasimg").style.display = "inline";
   }
-  if (res == 'move') {
-    if (flag) {
+
+  function findxy(res, e) {
+    if (res == 'down') {
       prevX = currX;
       prevY = currY;
       currX = e.clientX - canvas.offsetLeft;
       currY = e.clientY - canvas.offsetTop;
-      draw();
+
+      flag = true;
+      dot_flag = true;
+      if (dot_flag) {
+        ctx.beginPath();
+        ctx.fillStyle = x;
+        ctx.fillRect(currX, currY, 2, 2);
+        ctx.closePath();
+        dot_flag = false;
+      }
     }
+    if (res == 'up' || res == "out") {
+      flag = false;
+    }
+    if (res == 'move') {
+      if (flag) {
+        prevX = currX;
+        prevY = currY;
+        currX = e.clientX - canvas.offsetLeft;
+        currY = e.clientY - canvas.offsetTop;
+        draw();
+      }
 
-    function draw() {
-      ctx.beginPath();
-      ctx.moveTo(prevX, prevY);
-      ctx.lineTo(currX, currY);
-      ctx.strokeStyle = x;
-      ctx.lineWidth = y;
-      ctx.stroke();
-      ctx.closePath();
-      // send draw data
-      socket.emit('draw', { currX, currY, prevX, prevY });
+      function draw() {
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.stroke();
+        ctx.closePath();
+        // send draw data
+        socket.emit('draw', { currX, currY, prevX, prevY });
 
-    }   
+      }
+    }
   }
-}
 
-socket.on('eraseall', ()=>{
-  erase();
-});
+  socket.on('eraseall', () => {
+    erase();
+  });
 
 }
 
@@ -230,7 +247,7 @@ socket.on('updateUserList', function (users) {
 
 socket.on('newMessage', function (message) {
 
-  
+
   var formattedTime = moment(message.createdAt).format('h:mm a');
   var template = jQuery('#message-template').html();
   var html = Mustache.render(template, {
@@ -240,12 +257,8 @@ socket.on('newMessage', function (message) {
     color: COLORS[message.color],
     backgroundcolor: message.backgroundcolor
   });
-  if(message.text == '/new'){
-    console.log('Called')
-    socket.emit('startgame2');
-  }else{
-    jQuery('#messages').append(html);
-   }
+  jQuery('#messages').append(html);
+
 
   scrollToBottom();
 });
@@ -266,20 +279,21 @@ socket.on('newLocationMessage', function (message) {
 
 
 //timer
-socket.on('timer', function(data){
+socket.on('timer', function (data) {
   var template2 = jQuery('#timer-template').html();
   var html2 = Mustache.render(template2, {
-    timekeep: data.countdown});
-  
-    var timerkeeper = jQuery('#timekeeper');
-    
-  $('#timer').html(html2); 
+    timekeep: data.countdown
+  });
 
-  })
+  var timerkeeper = jQuery('#timekeeper');
+
+  $('#timer').html(html2);
+
+})
 
 jQuery('#message-form').on('submit', function (e) {
   e.preventDefault();
-  
+
   var messageTextbox = jQuery('[name=message]');
 
   socket.emit('createMessage', {
@@ -311,7 +325,7 @@ locationButton.on('click', function () {
 
 
 
-function eraseall(){
+function eraseall() {
   socket.emit('eraseall');
 }
 
