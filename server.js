@@ -133,6 +133,7 @@ socket.on('cleanword', function(){
       sleep.sleep(1);
       var user = users.getUser(socket.id);
       io.in(user.room).emit('eraseall');
+      io.to(user.room).emit('eraseall');
       io.in(user.room).emit('takeawaydraw');
       io.in(user.room).emit('clearchat');
       socket.in('clearWord').emit('GOOD LUCK');
