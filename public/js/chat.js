@@ -245,6 +245,7 @@ function init() {
       }
     }
     socket.on('eraseall', () => {
+      
       erase();
     });
 
@@ -376,7 +377,11 @@ locationButton.on('click', function () {
 
 
 function eraseall() {
-  socket.emit('eraseall');
+  if(drawPerm){
+    socket.emit('eraseall');
+  }else{
+    console.log('Cant erase when you arnt drawing fool')
+  }
 }
 
 
