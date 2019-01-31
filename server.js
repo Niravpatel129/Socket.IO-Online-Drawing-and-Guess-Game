@@ -64,7 +64,7 @@ io.on('connection', (socket) => {
     }
     //check if the new command is called
     else if (message.text == '/new') {
-      io.to(user.room).emit('eraseall');
+      gameloop = true;
       var drawer = 0;
       var user = users.getUser(socket.id);
       var userlist = []
@@ -84,7 +84,7 @@ io.on('connection', (socket) => {
         io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'NEW GAME INITALIZED, STARTING IN 5..', 7, 'lightyellow'));
         sleep.sleep(1); // sleep for 1 seconds
         io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Drawer is now: ' + listofPlayers[drawer].name, 7, 'lightyellow'));
-
+        start();
     } 
     else if (user && isRealString(message.text)) {
       io.to(user.room).emit('newMessage', generateMessage(user.name, message.text, color));
@@ -110,19 +110,20 @@ io.on('connection', (socket) => {
     io.to(user.room).emit('eraseall');
   })
 
-// listener
-socket.on('cleanword', function(){
+// listen 
+socket.on('cleanword', function(data){
   var user = users.getUser(socket.id);
   socket.to(user.room).emit('cleanword', drawWord.length);
 
 })
 
-  // timer and game loop
+// timer and game loop
+function start(){
   setInterval(function () {
     var user = users.getUser(socket.id);
-
-    io.sockets.emit('timer', { countdown: countdown });
     if(gameloop){
+      user = users.getUser(socket.id);
+      io.in(user.room).emit('timer', { countdown: countdown});
         if(listofPlayers[drawer] != null){
           io.to(listofPlayers[drawer].socket).emit('whodraws')
           io.to(listofPlayers[drawer].socket).emit('drawWord', drawWord)
@@ -131,15 +132,16 @@ socket.on('cleanword', function(){
     }
     if (countdown <= 0 && gameloop) {
       sleep.sleep(1);
-      var user = users.getUser(socket.id);
-      io.in(user.room).emit('eraseall');
       io.in(user.room).emit('takeawaydraw');
       io.in(user.room).emit('clearchat');
-      socket.in('clearWord').emit('GOOD LUCK');
-      io.sockets.emit('timer', { countdown: 0 });
-      io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Begin New Round', 5, 'lightyellow'));
+      io.in(user.room).emit('eraseall');
+      io.in(user.room).emit('eraseall');
+      io.in(user.room).emit('cleanword');
+      io.in(user.room).emit('timer', { countdown: 0 });
       drawer++;
       if(listofPlayers[drawer] != null){
+        io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Next Round!', 5, 'lightyellow'));
+
         io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Drawer is now: ' + listofPlayers[drawer].name, 7, 'lightyellow'));
         countdown = 60;
       }else{
@@ -153,7 +155,7 @@ socket.on('cleanword', function(){
 
     }
   }, 1200);
-
+}
 
 
   socket.on('createLocationMessage', (coords) => {

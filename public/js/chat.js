@@ -19,7 +19,7 @@ socket.on('startgame2', function (userlist) {
 });
 // Check if drawword is given
 socket.on('drawWord', function (drawWord) {
-  socket.emit('cleanword')
+  socket.emit('cleanword', drawWord);
   $('.word').html("Your Word is: ");
   $('.word2').html("Your Word: " + drawWord);
 
@@ -27,20 +27,18 @@ socket.on('drawWord', function (drawWord) {
 
 // Clear Data for players not drawing
 socket.on('cleanword', function (word) {
-  var guess = "";
-  for (var i = 0; i < word; i++) {
+  console.log(word);
+  guess = "";
+  for(var i = 0; i < word; i++){
     guess += '_ '
   }
-
-  if (word == '') {
-    $('.word2').html("Game Ended");
-
-  } else {
+ 
     $('.word2').html(guess);
-  }
+  
 })
 
 socket.on('clearchat', function () {
+  socket.emit('eraseall');
   $("input").removeAttr('disabled');
   $("input").attr('placeholder', 'Message');
   $("input").css('background-color', '');
@@ -102,10 +100,21 @@ function init() {
   w = canvas.width;
   h = canvas.height;
 
+  socket.on('eraseall', () => {
+    console.log('Why did you not recieve this server message?');
+    erase();
+  });
+
+}
+
   socket.on('takeawaydraw', function (data) {
+    socket.emit('eraseall');
     console.log('You dont get to draw');
     $('canvas').css('opacity', '0.9')
     drawPerm = false;
+    $("input").removeAttr('disabled');
+    $("input").attr('placeholder', 'Message');
+    $("input").css('background-color', '');
   })
 
   socket.on('whodraws', function (data) {
@@ -244,12 +253,7 @@ function init() {
         }
       }
     }
-    socket.on('eraseall', () => {
-      
-      erase();
-    });
-
-  }
+    
 
 }
 
