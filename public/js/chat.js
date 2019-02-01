@@ -39,13 +39,10 @@ socket.on('clearchat', function () {
   $("input").css('background-color', '');
 })
 
-
-
 //Start Game Function
 function startgame() {
   console.log('startgame function called');
   socket.emit('eraseall');
-
 }
 
 //Correct Word socket

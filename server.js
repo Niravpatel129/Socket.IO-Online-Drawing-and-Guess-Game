@@ -135,6 +135,8 @@ io.on('connection', (socket) => {
         io.in(user.room).emit('timer', { countdown: countdown });
         if (listofPlayers[drawer] != null) {
           io.to(listofPlayers[drawer].socket).emit('whodraws')
+          io.to(user.room).emit('cleanword');
+          
           io.to(listofPlayers[drawer].socket).emit('drawWord', "The draw word is: " + drawWord)
           countdown--;
         }
@@ -148,6 +150,7 @@ io.on('connection', (socket) => {
         io.in(user.room).emit('eraseall');
         io.in(user.room).emit('eraseall');
         io.in(user.room).emit('cleanword');
+        // io.to(user.room).emit('cleanword');
         io.in(user.room).emit('timer', { countdown: 0 });
         drawer++;
         if (listofPlayers[drawer] != null) {
