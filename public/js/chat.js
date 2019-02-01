@@ -15,7 +15,7 @@ var users;
 
 // Check if drawword is given
 socket.on('drawWord', function (drawWord) {
-  // socket.emit('cleanword', drawWord);
+  socket.emit('cleanword', drawWord);
   $('.word2').html(drawWord);
 
 });

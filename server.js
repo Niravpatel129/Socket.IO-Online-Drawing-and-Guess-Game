@@ -1,5 +1,5 @@
 const path = require('path');
-var sleep = require('sleep');
+const sleep = require('sleep');
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
@@ -81,18 +81,13 @@ io.on('connection', (socket) => {
       start();
     } else if (message.text.toUpperCase() == drawWord.toUpperCase()) {
       for (var i = 0; i < listofPlayers; i++) {
-        console.log(socket.id);
         if (listofPlayers[i].socket == socket.id) {
           listofPlayers[i].points += 10;
-
         }
       }
-      io.to(socket.id).emit('drawWord', "The draw word is: " + drawWord);
+      // io.to(socket.id).emit('drawWord', "The draw word is: " + drawWord);
 
-      //Add points to user message.name
-      //emit back to client to lock from typing any messages
       io.to(user.id).emit('correctword');
-      //Send global message that this person got the word correct
       io.to(user.room).emit('newMessage', generateMessage('[SERVER]', user.name + ' Guessed Correctly!', 3, 'lightyellow'));
     }
     else if (user && isRealString(message.text)) {
@@ -122,8 +117,7 @@ io.on('connection', (socket) => {
   // listen 
   socket.on('cleanword', function (data) {
     var user = users.getUser(socket.id);
-    socket.to(user.room).emit('cleanword', drawWord.length);
-
+    socket.to(user.room).emit('cleanword', drawWord);
   })
 
   // timer and game loop
@@ -134,10 +128,10 @@ io.on('connection', (socket) => {
         user = users.getUser(socket.id);
         io.in(user.room).emit('timer', { countdown: countdown });
         if (listofPlayers[drawer] != null) {
-          io.to(listofPlayers[drawer].socket).emit('whodraws')
           io.to(user.room).emit('cleanword');
-          
+          io.to(listofPlayers[drawer].socket).emit('whodraws')
           io.to(listofPlayers[drawer].socket).emit('drawWord', "The draw word is: " + drawWord)
+
           countdown--;
         }
       }
@@ -148,9 +142,9 @@ io.on('connection', (socket) => {
         io.in(user.room).emit('takeawaydraw');
         io.in(user.room).emit('clearchat');
         io.in(user.room).emit('eraseall');
-        io.in(user.room).emit('eraseall');
-        io.in(user.room).emit('cleanword');
-        // io.to(user.room).emit('cleanword');
+        socket.in(user.room).emit('cleanword');
+        socket.to(user.room).emit('cleanword');
+        io.to(user.room).emit('cleanword');
         io.in(user.room).emit('timer', { countdown: 0 });
         drawer++;
         if (listofPlayers[drawer] != null) {
