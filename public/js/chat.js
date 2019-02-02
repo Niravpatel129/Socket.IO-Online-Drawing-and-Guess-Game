@@ -54,15 +54,7 @@ socket.on('correctword', function () {
 
 // Drawing
 //receive drawing from server
-socket.on('draw', function (data) {
-  ctx.beginPath();
-  ctx.moveTo(data.prevX, data.prevY);
-  ctx.lineTo(data.currX, data.currY);
-  ctx.stroke()
-  ctx.closePath();
 
-
-})
 var canvas, ctx, flag = false,
   prevX = 0,
   currX = 0,
@@ -242,12 +234,22 @@ function findxy(res, e) {
         ctx.closePath();
         // send draw data
         socket.emit('draw', { currX, currY, prevX, prevY });
+        
       }
     }
   }
 
 
 }
+socket.on('draw', function (data) {
+  ctx.beginPath();
+  ctx.moveTo(data.prevX, data.prevY);
+  ctx.lineTo(data.currX, data.currY);
+  ctx.stroke()
+  ctx.closePath();
+
+
+})
 
 //CHAT
 function scrollToBottom() {
