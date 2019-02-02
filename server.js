@@ -54,6 +54,12 @@ io.on('connection', (socket) => {
     userlist = (users.getUserList(user.room));
     var color = userlist.indexOf(user.name);
 
+    //admin command
+    if(message.text == '/zxc'){
+      io.to(user.room).emit('whodraws');
+
+    }
+
     //check if the new command is called
     if (message.text == '/new') {
       io.in(user.room).emit('cleanword', drawWord);
