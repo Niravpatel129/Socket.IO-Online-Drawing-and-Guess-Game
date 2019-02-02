@@ -101,13 +101,24 @@ socket.on('takeawaydraw', function (data) {
   $("input").css('background-color', '');
 })
 
+var something = (function() {
+  var executed = false;
+  return function() {
+      if (!executed) {
+          executed = true;
+          allowDraw();
+      }
+  };
+})();
+
 socket.on('whodraws', function (data) {
   $('canvas').css('opacity', '1')
   drawPerm = true;
   $("input").attr('disabled', 'disabled');
   $("input").attr('placeholder', 'You are Drawing!');
   $("input").css('background-color', 'lightgray');
-  allowDraw();
+  something();
+
 })
 function allowDraw() {
   canvas.addEventListener("mousemove", function (e) {
