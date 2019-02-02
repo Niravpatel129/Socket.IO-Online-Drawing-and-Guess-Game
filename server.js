@@ -62,15 +62,11 @@ io.on('connection', (socket) => {
 
     //check if the new command is called
     if (message.text == '/new') {
-
+      drawer = 0;
       drawWord = drawWords[Math.floor(Math.random() * 6) + 1];
       gameloop = true;
-      var user = users.getUser(socket.id);
-      var userlist = []
-      userlist = (users.getUserList(user.room));
-      var color = userlist.indexOf(user.name);
+      console.log('playerlist', userlist);
       // Set the game into a Safe Empty State
-      var round = 0;
       var userlist = users.getUserSocketList(user.room);
       var userlistnames = users.getUserList(user.room);
       var playerCount = (userlist.length);
@@ -85,19 +81,22 @@ io.on('connection', (socket) => {
       if(listofPlayers[drawer] != null){
         io.to(user.room).emit('newMessage', generateMessage('[SERVER]', 'Drawer is now: ' + listofPlayers[drawer].name, 7, 'lightyellow'));
       }else{
+        console.log('Game loop turned False because list of player drawer is null!');
         gameloop = false;
       }
+      console.log('start function called!');
       start();
     } else if (message.text.toUpperCase() == drawWord.toUpperCase()) {
-      for (var i = 0; i < listofPlayers; i++) {
+      io.to(user.room).emit('newMessage', generateMessage('[SERVER]', user.name + ' Guessed Correctly!', 3, 'lightyellow'));
+      for (var i = 0; i < listofPlayers.length; i++) {
         if (listofPlayers[i].socket == socket.id) {
-          listofPlayers[i].points += 10;
+              listofPlayers[i].points += countdown + 5;
+              io.to(user.room).emit('newMessage', generateMessage('[SERVER]', user.name + ' now has: ' + listofPlayers[i].points, 3, 'lightyellow'));
         }
       }
-      // io.to(socket.id).emit('drawWord', "The draw word is: " + drawWord);
 
       io.to(user.id).emit('correctword');
-      io.to(user.room).emit('newMessage', generateMessage('[SERVER]', user.name + ' Guessed Correctly!', 3, 'lightyellow'));
+
     }
     else if (user && isRealString(message.text)) {
       io.to(user.room).emit('newMessage', generateMessage(user.name, message.text, color));
