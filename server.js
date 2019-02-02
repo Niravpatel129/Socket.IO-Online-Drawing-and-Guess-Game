@@ -21,7 +21,7 @@ var drawWords = ["abandon", "ability", "able", "about", "above", "absent", "abso
 var drawWord = 'Puppy';
 var gameloop;
 var listofPlayers = [];
-
+var correctWordCounter = 0;
 ///
 
 
@@ -62,6 +62,7 @@ io.on('connection', (socket) => {
 
     //check if the new command is called
     if (message.text == '/new') {
+      correctWordCounter = 0;
       drawer = 0;
       drawWord = drawWords[Math.floor(Math.random() * 6) + 1];
       gameloop = true;
@@ -92,6 +93,7 @@ io.on('connection', (socket) => {
         if (listofPlayers[i].socket == socket.id) {
               listofPlayers[i].points += countdown + 5;
               io.to(user.room).emit('newMessage', generateMessage('[SERVER]', user.name + ' now has: ' + listofPlayers[i].points, 3, 'lightyellow'));
+              correctWordCounter++;
         }
       }
 
@@ -142,7 +144,9 @@ io.on('connection', (socket) => {
           countdown--;
         }
       }
-      if (countdown <= 0 && gameloop) {
+      if (countdown <= 0 && gameloop || (correctWordCounter >= listofPlayers.length-1)) {
+        //round end
+        correctWordCounter = 0;
         io.to(user.room).emit('newMessage', generateMessage('[ROUND END]', 'The Draw word was: ' + drawWord, 5, 'lightyellow'));
         sleep.sleep(1);
         drawWord = drawWords[Math.floor(Math.random() * 6) + 1];

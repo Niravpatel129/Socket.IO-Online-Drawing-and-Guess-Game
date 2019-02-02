@@ -104,6 +104,9 @@ socket.on('takeawaydraw', function (data) {
 socket.on('whodraws', function (data) {
   $('canvas').css('opacity', '1')
   drawPerm = true;
+  $("input").attr('disabled', 'disabled');
+  $("input").attr('placeholder', 'You are Drawing!');
+  $("input").css('background-color', 'lightgray');
   allowDraw();
 })
 function allowDraw() {
