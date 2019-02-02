@@ -22,13 +22,19 @@ socket.on('drawWord', function (drawWord) {
 
 // Clear Data for players not drawing
 socket.on('cleanword', function (word) {
-  console.log(word);
-  guess = "";
-  for (var i = 0; i < word.length; i++) {
-    guess += '_ '
+  if(word == null){
+    console.log('clean word was passed a null word: ' + word);
+  }else{
+    var v = word.split(" ");
+    var last = v.pop();
+    guess = "";
+    for (var i = 0; i < last.length; i++) {
+      guess += '_ '
+    }
+  
+    $('.word2').html(guess);
   }
 
-  $('.word2').html(guess);
 
 })
 
@@ -39,11 +45,6 @@ socket.on('clearchat', function () {
   $("input").css('background-color', '');
 })
 
-//Start Game Function
-function startgame() {
-  console.log('startgame function called');
-  socket.emit('eraseall');
-}
 
 //Correct Word socket
 socket.on('correctword', function () {
@@ -85,7 +86,6 @@ function init() {
   h = canvas.height;
 
   socket.on('eraseall', () => {
-    console.log('Why did you not recieve this server message?');
     erase();
   });
 
@@ -102,7 +102,6 @@ socket.on('takeawaydraw', function (data) {
 })
 
 socket.on('whodraws', function (data) {
-  console.log('The Gods have blessed you with drawing permissions');
   $('canvas').css('opacity', '1')
   drawPerm = true;
   allowDraw();
