@@ -115,9 +115,6 @@ io.on('connection', (socket) => {
   // Clear The Guess word for everyone
   socket.to('clearWord').emit('GOOD LUCK');
 
-
-
-
   // socket erase for everyone
   socket.on('eraseall', function () {
     var user = users.getUser(socket.id);
